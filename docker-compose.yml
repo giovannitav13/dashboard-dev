@@ -1,0 +1,31 @@
+version: '3.8'
+
+name: dashboard-dev
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: auth-service-postgres
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpassword
+    ports:
+      - "5413:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dashboard-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  dashboard-dev:
+    name: dashboard-dev
+    driver: bridge

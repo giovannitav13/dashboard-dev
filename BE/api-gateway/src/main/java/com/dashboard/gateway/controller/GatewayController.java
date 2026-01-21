@@ -42,6 +42,13 @@ public class GatewayController {
         return forwardRequest(request, targetUrl);
     }
     
+    @RequestMapping(value = "/tasks/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+    public ResponseEntity<?> routeToTasksService(HttpServletRequest request) {
+        String path = request.getRequestURI().replace("/api/tasks", "");
+        String targetUrl = projectsServiceUrl + "/api/tasks" + path;
+        return forwardRequest(request, targetUrl);
+    }
+    
     private ResponseEntity<?> forwardRequest(HttpServletRequest request, String targetUrl) {
         try {
             HttpMethod method = HttpMethod.valueOf(request.getMethod());

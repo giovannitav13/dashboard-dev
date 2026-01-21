@@ -5,7 +5,7 @@ name: dashboard-dev
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: auth-service-postgres
+    container_name: dashboard-dev-postgres
     environment:
       POSTGRES_DB: authdb
       POSTGRES_USER: authuser
@@ -14,6 +14,7 @@ services:
       - "5413:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - dashboard-dev
     healthcheck:

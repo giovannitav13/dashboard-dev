@@ -107,6 +107,27 @@ public class AuthService {
         userRepository.save(user);
     }
     
+    public ValidateTokenResponse validateToken(String token) {
+        try {
+            if (!jwtUtil.validateToken(token)) {
+                return new ValidateTokenResponse(false, null, "Invalid or expired token");
+            }
+            
+            String email = jwtUtil.getEmailFromToken(token);
+            User user = userRepository.findByEmail(email)
+                .orElse(null);
+            
+            if (user == null || !user.getEnabled()) {
+                return new ValidateTokenResponse(false, email, "User not found or disabled");
+            }
+            
+            return new ValidateTokenResponse(true, email, "Token is valid");
+        } catch (Exception e) {
+            log.error("Error validating token", e);
+            return new ValidateTokenResponse(false, null, "Error validating token: " + e.getMessage());
+        }
+    }
+    
     private void sendPasswordRecoveryEmail(String email, String token) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();

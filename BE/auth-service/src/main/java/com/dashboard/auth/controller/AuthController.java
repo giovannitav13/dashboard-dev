@@ -60,6 +60,13 @@ public class AuthController {
         }
     }
     
+    @PostMapping("/validate-token")
+    public ResponseEntity<ValidateTokenResponse> validateToken(@Valid @RequestBody ValidateTokenRequest request) {
+        ValidateTokenResponse response = authService.validateToken(request.getToken());
+        HttpStatus status = response.isValid() ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+        return ResponseEntity.status(status).body(response);
+    }
+    
     // Inner classes for responses
     private static class ErrorResponse {
         private String message;

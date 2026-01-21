@@ -70,4 +70,21 @@ public class JwtUtil {
         final String tokenEmail = extractEmail(token);
         return (tokenEmail.equals(email) && !isTokenExpired(token));
     }
+    
+    public Boolean validateToken(String token) {
+        try {
+            final String tokenEmail = extractEmail(token);
+            return !isTokenExpired(token) && tokenEmail != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    public String getEmailFromToken(String token) {
+        try {
+            return extractEmail(token);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

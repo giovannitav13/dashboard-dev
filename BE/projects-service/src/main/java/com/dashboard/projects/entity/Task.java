@@ -40,6 +40,9 @@ public class Task {
     @Column(nullable = false)
     private String owner;
     
+    @Column(nullable = false)
+    private Boolean archived = false;
+
     @Column(columnDefinition = "TEXT")
     private String info;
 }

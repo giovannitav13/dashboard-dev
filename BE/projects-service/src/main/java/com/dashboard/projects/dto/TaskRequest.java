@@ -19,5 +19,7 @@ public class TaskRequest {
     
     private LocalDate deliveryDate;
     
+    private Boolean archived;
+
     private String info;
 }

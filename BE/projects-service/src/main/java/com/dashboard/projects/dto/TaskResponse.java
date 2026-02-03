@@ -18,5 +18,6 @@ public class TaskResponse {
     private LocalDateTime createdAt;
     private LocalDate deliveryDate;
     private String owner;
+    private Boolean archived;
     private String info;
 }

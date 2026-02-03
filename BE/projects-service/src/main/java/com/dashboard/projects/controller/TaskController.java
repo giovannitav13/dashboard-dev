@@ -19,7 +19,7 @@ public class TaskController {
     
     private final TaskService taskService;
     
-    @GetMapping("/{projectId}")
+    @GetMapping("/project/{projectId}")
     public ResponseEntity<?> getAllTasksByProject(
             @PathVariable Long projectId,
             @RequestHeader("X-User-Email") String userEmail) {
@@ -32,13 +32,14 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/search")
+    @GetMapping("/project/{projectId}/search")
     public ResponseEntity<?> searchTasksByName(
-            @RequestParam Long projectId,
+            @PathVariable Long projectId,
             @RequestParam String name,
+            @RequestParam(required = false) Boolean archived,
             @RequestHeader("X-User-Email") String userEmail) {
         try {
-            List<TaskResponse> tasks = taskService.searchTasksByName(projectId, name, userEmail);
+            List<TaskResponse> tasks = taskService.searchTasksByName(projectId, name, archived, userEmail);
             return ResponseEntity.ok(tasks);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

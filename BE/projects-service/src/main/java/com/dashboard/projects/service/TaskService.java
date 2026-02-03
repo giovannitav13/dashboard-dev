@@ -34,6 +34,7 @@ public class TaskService {
         task.setDescription(request.getDescription());
         task.setDeliveryDate(request.getDeliveryDate());
         task.setOwner(userEmail);
+        task.setArchived(request.getArchived() != null ? request.getArchived() : false);
         task.setInfo(request.getInfo());
         
         task = taskRepository.save(task);
@@ -57,6 +58,9 @@ public class TaskService {
         task.setName(request.getName());
         task.setDescription(request.getDescription());
         task.setDeliveryDate(request.getDeliveryDate());
+        if (request.getArchived() != null) {
+            task.setArchived(request.getArchived());
+        }
         task.setInfo(request.getInfo());
         
         task = taskRepository.save(task);
@@ -74,12 +78,12 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
-    public List<TaskResponse> searchTasksByName(Long projectId, String name, String userEmail) {
+    public List<TaskResponse> searchTasksByName(Long projectId, String name, Boolean archived, String userEmail) {
         // Verify user has access to the project
         projectRepository.findByIdAndOwnerOrCollaborator(projectId, userEmail)
             .orElseThrow(() -> new RuntimeException("Project not found or access denied"));
 
-        List<Task> tasks = taskRepository.findByProjectIdAndNameLikeIgnoreCase(projectId, name);
+        List<Task> tasks = taskRepository.findByProjectIdAndNameLikeIgnoreCase(projectId, name, archived);
         return tasks.stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
@@ -94,6 +98,7 @@ public class TaskService {
             task.getCreatedAt(),
             task.getDeliveryDate(),
             task.getOwner(),
+            task.getArchived(),
             task.getInfo()
         );
     }

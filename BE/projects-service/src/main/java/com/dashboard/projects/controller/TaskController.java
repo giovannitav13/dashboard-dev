@@ -31,6 +31,20 @@ public class TaskController {
                 .body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchTasksByName(
+            @RequestParam Long projectId,
+            @RequestParam String name,
+            @RequestHeader("X-User-Email") String userEmail) {
+        try {
+            List<TaskResponse> tasks = taskService.searchTasksByName(projectId, name, userEmail);
+            return ResponseEntity.ok(tasks);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage()));
+        }
+    }
     
     @PostMapping
     public ResponseEntity<?> createTask(

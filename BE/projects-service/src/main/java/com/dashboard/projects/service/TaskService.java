@@ -73,6 +73,17 @@ public class TaskService {
             .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
+
+    public List<TaskResponse> searchTasksByName(Long projectId, String name, String userEmail) {
+        // Verify user has access to the project
+        projectRepository.findByIdAndOwnerOrCollaborator(projectId, userEmail)
+            .orElseThrow(() -> new RuntimeException("Project not found or access denied"));
+
+        List<Task> tasks = taskRepository.findByProjectIdAndNameLikeIgnoreCase(projectId, name);
+        return tasks.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+    }
     
     private TaskResponse mapToResponse(Task task) {
         return new TaskResponse(

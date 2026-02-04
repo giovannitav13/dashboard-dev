@@ -5,12 +5,18 @@ import com.dashboard.projects.dto.TaskResponse;
 import com.dashboard.projects.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
@@ -19,27 +25,18 @@ public class TaskController {
     
     private final TaskService taskService;
     
-    @GetMapping("/project/{projectId}")
-    public ResponseEntity<?> getAllTasksByProject(
-            @PathVariable Long projectId,
-            @RequestHeader("X-User-Email") String userEmail) {
-        try {
-            List<TaskResponse> tasks = taskService.getAllTasksByProject(projectId, userEmail);
-            return ResponseEntity.ok(tasks);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage()));
-        }
-    }
-
     @GetMapping("/project/{projectId}/search")
     public ResponseEntity<?> searchTasksByName(
             @PathVariable Long projectId,
-            @RequestParam String name,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) Boolean archived,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestHeader("X-User-Email") String userEmail) {
         try {
-            List<TaskResponse> tasks = taskService.searchTasksByName(projectId, name, archived, userEmail);
+            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            log.info("Search tasks: projectId={}, name={}, archived={}, page={}, size={}, user={}", projectId, name, archived, page, size, userEmail);
+            Page<TaskResponse> tasks = taskService.searchTasksByName(projectId, name, archived, userEmail, pageable);
             return ResponseEntity.ok(tasks);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -52,6 +49,7 @@ public class TaskController {
             @Valid @RequestBody TaskRequest request,
             @RequestHeader("X-User-Email") String userEmail) {
         try {
+            log.info("Create task: projectId={}, name={}, user={}", request.getProjectId(), request.getName(), userEmail);
             TaskResponse response = taskService.createTask(request, userEmail);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
@@ -66,6 +64,7 @@ public class TaskController {
             @Valid @RequestBody TaskRequest request,
             @RequestHeader("X-User-Email") String userEmail) {
         try {
+            log.info("Update task: id={}, projectId={}, user={}", id, request.getProjectId(), userEmail);
             TaskResponse response = taskService.updateTask(id, request, userEmail);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {

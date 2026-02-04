@@ -8,6 +8,9 @@ import com.dashboard.projects.repository.ProjectRepository;
 import com.dashboard.projects.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,26 +70,21 @@ public class TaskService {
         return mapToResponse(task);
     }
     
-    public List<TaskResponse> getAllTasksByProject(Long projectId, String userEmail) {
-        // Verify user has access to the project
-        projectRepository.findByIdAndOwnerOrCollaborator(projectId, userEmail)
-            .orElseThrow(() -> new RuntimeException("Project not found or access denied"));
-        
-        List<Task> tasks = taskRepository.findByProjectId(projectId);
-        return tasks.stream()
-            .map(this::mapToResponse)
-            .collect(Collectors.toList());
-    }
-
-    public List<TaskResponse> searchTasksByName(Long projectId, String name, Boolean archived, String userEmail) {
+    public Page<TaskResponse> searchTasksByName(Long projectId, String name, Boolean archived, String userEmail, Pageable pageable) {
         // Verify user has access to the project
         projectRepository.findByIdAndOwnerOrCollaborator(projectId, userEmail)
             .orElseThrow(() -> new RuntimeException("Project not found or access denied"));
 
-        List<Task> tasks = taskRepository.findByProjectIdAndNameLikeIgnoreCase(projectId, name, archived);
-        return tasks.stream()
+        Page<Task> tasks;
+        if (name == null || name.isBlank()) {
+            tasks = taskRepository.findByProjectIdAndArchived(projectId, archived, pageable);
+        } else {
+            tasks = taskRepository.searchByProjectIdAndNameLikeIgnoreCase(projectId, name, archived, pageable);
+        }
+        List<TaskResponse> responses = tasks.getContent().stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
+        return new PageImpl<>(responses, pageable, tasks.getTotalElements());
     }
     
     private TaskResponse mapToResponse(Task task) {

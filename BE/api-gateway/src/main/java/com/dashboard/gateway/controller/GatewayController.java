@@ -32,6 +32,7 @@ public class GatewayController {
     public ResponseEntity<?> routeToAuthService(HttpServletRequest request) {
         String path = request.getRequestURI().replace("/api/auth", "");
         String targetUrl = authServiceUrl + "/api/auth" + path;
+        log.info("Gateway route: {} {} -> {}", request.getMethod(), request.getRequestURI(), targetUrl);
         return forwardRequest(request, targetUrl);
     }
     
@@ -39,6 +40,7 @@ public class GatewayController {
     public ResponseEntity<?> routeToProjectsService(HttpServletRequest request) {
         String path = request.getRequestURI().replace("/api/projects", "");
         String targetUrl = projectsServiceUrl + "/api/projects" + path;
+        log.info("Gateway route: {} {} -> {}", request.getMethod(), request.getRequestURI(), targetUrl);
         return forwardRequest(request, targetUrl);
     }
     
@@ -46,6 +48,7 @@ public class GatewayController {
     public ResponseEntity<?> routeToTasksService(HttpServletRequest request) {
         String path = request.getRequestURI().replace("/api/tasks", "");
         String targetUrl = projectsServiceUrl + "/api/tasks" + path;
+        log.info("Gateway route: {} {} -> {}", request.getMethod(), request.getRequestURI(), targetUrl);
         return forwardRequest(request, targetUrl);
     }
     

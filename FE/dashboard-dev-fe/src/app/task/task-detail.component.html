@@ -1,0 +1,77 @@
+<app-sidebar></app-sidebar>
+<div class="task-detail-container">
+  <div *ngIf="loading && !task" class="loading">Loading...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  
+  <div *ngIf="task && project" class="task-detail-content">
+    <div class="task-header">
+      <div>
+        <a [routerLink]="['/progetti', projectId]" class="back-link">← Back to Project</a>
+        <h1>{{ task.name }} <span *ngIf="task.archived" class="detail-badge detail-badge-archived">Archived</span></h1>
+        <div class="task-meta-info">
+          <span><strong>Project:</strong> {{ project.name }}</span>
+          <span><strong>Owner:</strong> {{ task.owner }}</span>
+          <span *ngIf="task.deliveryDate"><strong>Delivery:</strong> {{ task.deliveryDate | date:'dd/MM/yyyy' }}</span>
+          <span><strong>Created:</strong> {{ task.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+      <button *ngIf="!editMode" (click)="toggleEdit()" class="btn-primary">Edit</button>
+      <div *ngIf="editMode" class="edit-actions">
+        <button (click)="toggleEdit()" class="btn-secondary">Cancel</button>
+        <button (click)="saveTask()" [disabled]="loading" class="btn-primary">
+          {{ loading ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="task-body">
+      <div class="task-section">
+        <h3>Description</h3>
+        <div *ngIf="!editMode" class="task-content">
+          <p *ngIf="task.description">{{ task.description }}</p>
+          <p *ngIf="!task.description" class="empty-text">No description</p>
+        </div>
+        <div *ngIf="editMode" class="edit-field">
+          <textarea 
+            [(ngModel)]="taskForm.description" 
+            name="description"
+            class="description-textarea"
+            placeholder="Enter task description..."></textarea>
+        </div>
+      </div>
+
+      <div class="task-section">
+        <h3>Info</h3>
+        <div *ngIf="!editMode" class="task-content info-content">
+          <pre *ngIf="task.info" class="info-text">{{ task.info }}</pre>
+          <p *ngIf="!task.info" class="empty-text">No info</p>
+        </div>
+        <div *ngIf="editMode" class="edit-field">
+          <textarea 
+            [(ngModel)]="taskForm.info" 
+            name="info"
+            class="info-textarea"
+            placeholder="Enter task information, notes, or details..."></textarea>
+        </div>
+      </div>
+
+      <div *ngIf="editMode" class="task-section">
+        <h3>Delivery Date</h3>
+        <div class="edit-field">
+          <input 
+            type="date" 
+            [(ngModel)]="taskForm.deliveryDate" 
+            name="deliveryDate"
+            class="date-input">
+        </div>
+      </div>
+
+      <div *ngIf="editMode" class="task-section">
+        <label class="detail-checkbox-label">
+          <input type="checkbox" [(ngModel)]="taskForm.archived" name="archived">
+          Archived
+        </label>
+      </div>
+    </div>
+  </div>
+</div>

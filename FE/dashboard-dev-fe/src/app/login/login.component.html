@@ -1,0 +1,128 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Dashboard</h1>
+    
+    <div class="tabs">
+      <button 
+        [class.active]="viewMode === 'login'" 
+        (click)="setViewMode('login')">
+        Login
+      </button>
+      <button 
+        [class.active]="viewMode === 'register'" 
+        (click)="setViewMode('register')">
+        Sign Up edit
+      </button>
+      <button 
+        [class.active]="viewMode === 'recovery'" 
+        (click)="setViewMode('recovery')">
+        Recover Password
+      </button>
+    </div>
+
+    <div class="messages">
+      <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+    </div>
+
+    <!-- Login Form -->
+    <form *ngIf="viewMode === 'login'" (ngSubmit)="onLogin()" class="form">
+      <div class="form-group">
+        <input 
+          type="email" 
+          placeholder="Email" 
+          [(ngModel)]="loginData.email" 
+          name="email"
+          required>
+      </div>
+      <div class="form-group">
+        <input 
+          type="password" 
+          placeholder="Password" 
+          [(ngModel)]="loginData.password" 
+          name="password"
+          required>
+      </div>
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form *ngIf="viewMode === 'register'" (ngSubmit)="onRegister()" class="form">
+      <div class="form-group">
+        <input 
+          type="text" 
+          placeholder="First Name" 
+          [(ngModel)]="registerData.firstName" 
+          name="firstName"
+          required>
+      </div>
+      <div class="form-group">
+        <input 
+          type="text" 
+          placeholder="Last Name" 
+          [(ngModel)]="registerData.lastName" 
+          name="lastName"
+          required>
+      </div>
+      <div class="form-group">
+        <input 
+          type="email" 
+          placeholder="Email" 
+          [(ngModel)]="registerData.email" 
+          name="email"
+          required>
+      </div>
+      <div class="form-group">
+        <input 
+          type="password" 
+          placeholder="Password" 
+          [(ngModel)]="registerData.password" 
+          name="password"
+          required>
+      </div>
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Sign Up' }}
+      </button>
+    </form>
+
+    <!-- Recovery Form -->
+    <form *ngIf="viewMode === 'recovery'" (ngSubmit)="onRequestRecovery()" class="form">
+      <div class="form-group">
+        <input 
+          type="email" 
+          placeholder="Email" 
+          [(ngModel)]="recoveryData.email" 
+          name="email"
+          required>
+      </div>
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Send' }}
+      </button>
+    </form>
+
+    <!-- Reset Password Form -->
+    <form *ngIf="viewMode === 'reset'" (ngSubmit)="onResetPassword()" class="form">
+      <div class="form-group">
+        <input 
+          type="text" 
+          placeholder="Token" 
+          [(ngModel)]="resetData.token" 
+          name="token"
+          required>
+      </div>
+      <div class="form-group">
+        <input 
+          type="password" 
+          placeholder="New Password" 
+          [(ngModel)]="resetData.newPassword" 
+          name="newPassword"
+          required>
+      </div>
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Reset Password' }}
+      </button>
+    </form>
+  </div>
+</div>

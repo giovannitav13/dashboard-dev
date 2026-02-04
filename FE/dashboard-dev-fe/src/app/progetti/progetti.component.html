@@ -1,0 +1,245 @@
+<app-sidebar></app-sidebar>
+<div class="progetti-container">
+  <div class="header">
+    <h1>Projects</h1>
+    <button *ngIf="viewMode === 'list'" (click)="setViewMode('create')" class="btn-primary">
+      + New Project
+    </button>
+  </div>
+
+  <div class="messages">
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="success" *ngIf="successMessage">{{ successMessage }}</div>
+  </div>
+
+  <!-- Lista Progetti -->
+  <div *ngIf="viewMode === 'list'" class="projects-list">
+    <div *ngIf="loading" class="loading">Loading...</div>
+    <div *ngIf="!loading && projects.length === 0" class="empty">
+      No projects found. Create your first project!
+    </div>
+    <div *ngFor="let project of projects" class="project-card" (click)="router.navigate(['/progetti', project.id])" style="cursor: pointer;">
+      <div class="project-header">
+        <h3>{{ project.name }}</h3>
+        <div class="project-actions" (click)="$event.stopPropagation()">
+          <button (click)="setViewMode('edit', project)" class="btn-small">Edit</button>
+        </div>
+      </div>
+      <p class="project-description">{{ project.description || 'No description' }}</p>
+      <div class="project-info">
+        <span><strong>Sector:</strong> {{ project.sector }}</span>
+        <span><strong>Client:</strong> {{ project.client }}</span>
+        <span><strong>PM:</strong> {{ project.projectManager }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Crea/Modifica -->
+  <div *ngIf="viewMode === 'create' || viewMode === 'edit'" class="form-container">
+    <h2>{{ viewMode === 'create' ? 'New Project' : 'Edit Project' }}</h2>
+    
+    <form (ngSubmit)="viewMode === 'create' ? onCreate() : onUpdate()" class="project-form">
+      <div class="form-group">
+        <label>Name *</label>
+        <input type="text" [(ngModel)]="projectForm.name" name="name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="projectForm.description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sector *</label>
+          <input type="text" [(ngModel)]="projectForm.sector" name="sector" required>
+        </div>
+
+        <div class="form-group">
+          <label>Client *</label>
+          <input type="text" [(ngModel)]="projectForm.client" name="client" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Client Contact *</label>
+          <input type="text" [(ngModel)]="projectForm.clientContact" name="clientContact" required>
+        </div>
+
+        <div class="form-group">
+          <label>Project Manager *</label>
+          <input type="text" [(ngModel)]="projectForm.projectManager" name="projectManager" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Collaborators</label>
+        <div class="collaborators-input">
+          <input 
+            type="text" 
+            [(ngModel)]="newCollaborator" 
+            name="newCollaborator"
+            placeholder="Add collaborator"
+            (keyup.enter)="addCollaborator()">
+          <button type="button" (click)="addCollaborator()" class="btn-small">Add</button>
+        </div>
+        <div *ngIf="projectForm.collaborators && projectForm.collaborators.length > 0" class="collaborators-list">
+          <span *ngFor="let collab of projectForm.collaborators; let i = index" class="collaborator-tag">
+            {{ collab }}
+            <button type="button" (click)="removeCollaborator(i)" class="remove-btn">×</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" (click)="setViewMode('list')" class="btn-secondary">Cancel</button>
+        <button type="submit" [disabled]="loading" class="btn-primary">
+          {{ loading ? 'Saving...' : (viewMode === 'create' ? 'Create' : 'Save') }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Vista Dettaglio -->
+  <div *ngIf="viewMode === 'view' && selectedProject" class="view-container">
+    <div class="view-header">
+      <h2>{{ selectedProject.name }}</h2>
+      <div class="view-actions">
+        <button (click)="setViewMode('edit', selectedProject)" class="btn-primary">Edit</button>
+        <button (click)="setViewMode('list')" class="btn-secondary">Back</button>
+      </div>
+    </div>
+
+    <!-- Accordion Dettagli Progetto -->
+    <div class="accordion">
+      <button 
+        class="accordion-header" 
+        (click)="projectDetailsExpanded = !projectDetailsExpanded"
+        [class.expanded]="projectDetailsExpanded">
+        <span>Dettagli Progetto</span>
+        <span class="accordion-icon">{{ projectDetailsExpanded ? '−' : '+' }}</span>
+      </button>
+      <div class="accordion-content" [class.expanded]="projectDetailsExpanded">
+        <div class="view-section">
+        <h3>Description</h3>
+        <p>{{ selectedProject.description || 'No description' }}</p>
+      </div>
+
+      <div class="view-section">
+        <h3>Information</h3>
+        <div class="info-grid">
+          <div><strong>Sector:</strong> {{ selectedProject.sector }}</div>
+          <div><strong>Client:</strong> {{ selectedProject.client }}</div>
+          <div><strong>Client Contact:</strong> {{ selectedProject.clientContact }}</div>
+          <div><strong>Project Manager:</strong> {{ selectedProject.projectManager }}</div>
+          <div><strong>Owner:</strong> {{ selectedProject.owner }}</div>
+        </div>
+      </div>
+
+      <div class="view-section" *ngIf="selectedProject.collaborators && selectedProject.collaborators.length > 0">
+        <h3>Collaborators</h3>
+        <div class="collaborators-list">
+          <span *ngFor="let collab of selectedProject.collaborators" class="collaborator-tag">{{ collab }}</span>
+        </div>
+      </div>
+
+      <div class="view-section">
+        <h3>Dates</h3>
+        <div class="info-grid">
+          <div><strong>Created:</strong> {{ selectedProject.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+          <div><strong>Updated:</strong> {{ selectedProject.updatedAt | date:'dd/MM/yyyy HH:mm' }}</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Sezione Task Separata -->
+    <div class="tasks-section">
+      <div class="tasks-header">
+        <h3>Task</h3>
+          <button 
+            *ngIf="taskViewMode === 'list'" 
+            (click)="setTaskViewMode('create')" 
+            class="btn-primary">
+            + New Task
+          </button>
+      </div>
+
+      <!-- Form Task (solo per creare) -->
+      <app-task-form
+        *ngIf="taskViewMode === 'create'"
+        [projectId]="selectedProject.id"
+        [task]="null"
+        [mode]="'create'"
+        (saved)="onTaskSaved()"
+        (cancelled)="onTaskCancelled()">
+      </app-task-form>
+
+      <!-- Lista Task -->
+      <div *ngIf="taskViewMode === 'list'" class="tasks-list-wrapper">
+        <div class="task-filters-card">
+          <div class="task-filters-label">Filter tasks</div>
+          <div class="task-filters-row">
+            <div class="task-filter-group">
+              <label class="task-filter-label">Name</label>
+              <input
+                type="text"
+                [(ngModel)]="taskSearchQuery"
+                (input)="onTaskSearchInput()"
+                placeholder="Search by name..."
+                class="task-filter-input">
+            </div>
+            <div class="task-filter-group">
+              <label class="task-filter-label">Status</label>
+              <select
+                [(ngModel)]="taskSearchArchived"
+                (ngModelChange)="onTaskSearchArchivedChange()"
+                class="task-filter-select">
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <button *ngIf="hasActiveTaskFilters()" type="button" (click)="clearTaskSearch()" class="btn-secondary task-filters-clear">Clear filters</button>
+          </div>
+          <p class="task-filters-hint">Search by name; status filter applies to search results.</p>
+        </div>
+        <div *ngIf="loadingTasks" class="loading">Loading tasks...</div>
+        <div *ngIf="!loadingTasks && tasks.length === 0" class="empty">
+          {{ hasActiveTaskFilters() ? 'No tasks match your filters.' : 'No tasks found. Create your first task!' }}
+        </div>
+        <div class="tasks-list">
+          <div *ngFor="let task of tasks" class="task-card" [class.task-card-archived]="task.archived" (click)="router.navigate(['/progetti', selectedProject.id, 'tasks', task.id])" style="cursor: pointer;">
+            <div class="task-header">
+              <h4>{{ task.name }}</h4>
+              <span *ngIf="task.archived" class="task-badge task-badge-archived">Archived</span>
+            </div>
+            <p *ngIf="task.description" class="task-description">{{ task.description }}</p>
+            <div class="task-info">
+              <span *ngIf="task.deliveryDate">
+                <strong>Delivery:</strong> {{ task.deliveryDate | date:'dd/MM/yyyy' }}
+              </span>
+              <span><strong>Owner:</strong> {{ task.owner }}</span>
+            </div>
+            <div *ngIf="task.info" class="task-info-text">
+              <strong>Info:</strong> {{ task.info }}
+            </div>
+            <div class="task-meta">
+              <small>Created: {{ task.createdAt | date:'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!loadingTasks && taskPage && totalTaskPages > 1" class="task-pagination">
+          <span class="task-pagination-info">
+            Page {{ currentTaskPage + 1 }} of {{ totalTaskPages }} ({{ totalTaskElements }} total)
+          </span>
+          <div class="task-pagination-buttons">
+            <button type="button" (click)="goToPrevTaskPage()" [disabled]="!hasPrevTaskPage" class="btn-small">Previous</button>
+            <button type="button" (click)="goToNextTaskPage()" [disabled]="!hasNextTaskPage" class="btn-small">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="task-form-container">
+  <h3>{{ mode === 'create' ? 'New Task' : 'Edit Task' }}</h3>
+  
+  <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <form (ngSubmit)="onSubmit()" class="task-form">
+    <div class="form-group">
+      <label>Name *</label>
+      <input type="text" [(ngModel)]="taskForm.name" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="taskForm.description" name="description" rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Delivery Date</label>
+      <input type="date" [(ngModel)]="taskForm.deliveryDate" name="deliveryDate">
+    </div>
+
+    <div class="form-group">
+      <label>Info</label>
+      <textarea [(ngModel)]="taskForm.info" name="info" rows="2"></textarea>
+    </div>
+
+    <div class="form-group" *ngIf="mode === 'edit'">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="taskForm.archived" name="archived">
+        Archived
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="onCancel()" class="btn-secondary">Cancel</button>
+      <button type="submit" [disabled]="loading" class="btn-primary">
+        {{ loading ? 'Saving...' : (mode === 'create' ? 'Create' : 'Save') }}
+      </button>
+    </div>
+  </form>
+</div>
